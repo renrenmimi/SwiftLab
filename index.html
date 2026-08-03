@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwiftLab · 看得见的 App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="aurora" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">🧪</div>
+      <div>
+        <div class="logo-name">SwiftLab</div>
+        <div class="logo-sub">看得见的 App</div>
+      </div>
+    </div>
+
+    <nav class="stops" id="stops"></nav>
+
+    <div class="side-foot">
+      <div class="progress-card">
+        <div class="progress-label">学习进度</div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-num" id="progressNum">0 / 4</div>
+      </div>
+      <div class="side-note">姐妹站:AgentLab · 看得见的 Agent</div>
+    </div>
+  </aside>
+
+  <main class="main" id="main"></main>
+
+  <div class="popover-mask" id="popMask"></div>
+  <div class="popover" id="popover"></div>
+  <canvas id="confetti"></canvas>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
