@@ -1,5 +1,7 @@
 # SwiftLab · 看得见的 App
 
+**▶ [Open the course](https://renrenmimi.github.io/SwiftLab/)** — runs in your browser, nothing to install.
+
 一个面向零基础学习者的可视化教学站:拆开 [iCanDoIt](https://github.com/renrenmimi/iCanDoIt),
 教你从一行 `Hello, world!` 长出一个真正的 Mac App。
 姐妹站:[AgentLab](https://github.com/renrenmimi/AgentLab)(看得见的 Agent)。
