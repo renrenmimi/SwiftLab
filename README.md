@@ -1,34 +1,51 @@
-# SwiftLab · 看得见的 App
+# SwiftLab — See an App Take Shape
 
 **▶ [Open the course](https://renrenmimi.github.io/SwiftLab/)** — runs in your browser, nothing to install.
 
-一个面向零基础学习者的可视化教学站:拆开 [iCanDoIt](https://github.com/renrenmimi/iCanDoIt),
-教你从一行 `Hello, world!` 长出一个真正的 Mac App。
-姐妹站:[AgentLab](https://github.com/renrenmimi/AgentLab)(看得见的 Agent)。
+An interactive Swift and SwiftUI course for people starting from zero. It takes
+[iCanDoIt](https://github.com/renrenmimi/iCanDoIt) apart and rebuilds it in front of you,
+from a single `Hello, world!` line to a real macOS app.
 
-要传达的唯一核心结论:**界面 = f(数据)**。
+Sister site: [AgentLab](https://agent-lab-blond.vercel.app) — see inside an AI agent.
 
-## 怎么打开
+The single idea it exists to deliver: **the interface is a function of your data.**
 
-双击 `index.html` 就行——纯静态网页,零安装、零命令行、不联网。
+## How to open it
 
-## 学习路线(四站闭环)
+Double-click `index.html`. It is a plain static page — nothing to install, no command line,
+no network required.
 
-1. **什么是 App**(先懂)— 六幕零代码:界面 / 数据 / 事件 → 公式揭晓
-2. **看它长大**(再看)— 九步慢动作:左边代码(绿色 = 本步新增),右边 App 实时长大,部分模拟窗口可交互
-3. **亲手写**(动手)— 迷你版 iCanDoIt 挖 8 个空,每空先教后练,答错有针对性纠错,3 次错解锁看答案,全对可"运行"
-4. **装进你的 Mac**(实战)— 七步清单带你在真 Xcode 里跑起来,完整代码已验证可编译
+## Four stops
 
-## 设计要点(继承自 AgentLab)
+1. **What an app is** — six scenes, no code: interface, data, events, then the formula.
+2. **Watch it grow** — nine steps in slow motion. Code on the left (green marks what this
+   step added), the app growing on the right; several of the mock windows are interactive.
+3. **Write it yourself** — a miniature iCanDoIt with eight blanks. Each blank teaches before
+   it asks; wrong answers get a specific correction, and three misses unlock the answer.
+   Get them all and you can "run" it.
+4. **Put it on your Mac** — a seven-step checklist for doing it in real Xcode. The full
+   source is included and compiles.
 
-- 术语词典:正文 `[[key:词]]` 可点击弹出小白解释(`data.js` 的 GLOSSARY)
-- 按钮文字即节拍:第二站主按钮写的是"下一拍:给它记性 →"而非"下一步"
-- 针对性纠错:每个错误选项都有专属解释(为什么错、编译器会怎么骂你)
-- 学习进度存 localStorage,关掉重开接着学
+## Notes on design
 
-## 文件结构
+- **A glossary built into the prose** — writing `[[key:label]]` in the body renders a
+  clickable term that pops up a beginner-level explanation (see `GLOSSARY` in `data.js`).
+- **Button labels carry the rhythm** — stop 2's primary button reads "Next beat: give it a
+  memory →" rather than a bare "Next".
+- **Corrections are specific** — every wrong option has its own explanation of why it is
+  wrong and what the compiler would say.
+- **Progress persists** to `localStorage`.
 
-- `index.html` — 页面外壳
-- `styles.css` — 深色玻璃 + 极光视觉(与 iCanDoIt 正式版同一套审美)
-- `data.js` — 全部教学内容(词典 / 四站数据 / 完整代码)
-- `app.js` — 交互逻辑(站点切换 / 语法高亮 / 挖空闯关 / 彩带)
+## Files
+
+| File | Role |
+|---|---|
+| `index.html` | The page shell |
+| `styles.css` | Dark glass and aurora visuals, matching the real iCanDoIt |
+| `data.js` | All course content — glossary, the four stops, the full source |
+| `app.js` | Interaction — stop switching, syntax highlighting, the fill-in-the-blank flow |
+
+---
+
+© 2026 Weiren Feng. All rights reserved. Published for reading and portfolio purposes; not
+licensed for reuse, modification, or redistribution.
