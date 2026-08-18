@@ -35,8 +35,8 @@ no network required.
 - **A glossary built into the prose** — writing `[[key:label]]` in the body renders a
   clickable term that pops up a beginner-level explanation (see `GLOSSARY` in `data.js`).
 - **Button labels say what comes next** — stop 2's primary button reads "Next beat: give it a
-  memory →" rather than a bare "Next".
-- **Corrections are specific** — every wrong option has its own explanation of why it is
+  memory →".
+- **Per-option corrections** — every wrong option has its own explanation of why it is
   wrong and what the compiler would say.
 - **Progress persists** to `localStorage`.
 
