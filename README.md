@@ -8,7 +8,7 @@ from a single `Hello, world!` line to a real macOS app.
 
 Sister site: [AgentLab](https://agent-lab-blond.vercel.app) — see inside an AI agent.
 
-The single idea it exists to deliver: **the interface is a function of your data.**
+**The point: the interface is a function of your data.**
 
 ![The course — four stops from Hello, world to a real macOS app](docs/swiftlab.jpg)
 
@@ -34,7 +34,7 @@ no network required.
 
 - **A glossary built into the prose** — writing `[[key:label]]` in the body renders a
   clickable term that pops up a beginner-level explanation (see `GLOSSARY` in `data.js`).
-- **Button labels carry the rhythm** — stop 2's primary button reads "Next beat: give it a
+- **Button labels say what comes next** — stop 2's primary button reads "Next beat: give it a
   memory →" rather than a bare "Next".
 - **Corrections are specific** — every wrong option has its own explanation of why it is
   wrong and what the compiler would say.
