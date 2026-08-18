@@ -16,8 +16,7 @@ Sister site: [AgentLab](https://agent-lab-blond.vercel.app) — see inside an AI
 
 ## How to open it
 
-Double-click `index.html`. It is a plain static page — nothing to install, no command line,
-no network required.
+Double-click `index.html`. It is a plain static page — nothing to install.
 
 ## Four stops
 
@@ -28,7 +27,7 @@ no network required.
    it asks; wrong answers get a specific correction, and three misses unlock the answer.
    Get them all and you can "run" it.
 4. **Put it on your Mac** — a seven-step checklist for doing it in real Xcode. The full
-   source is included and compiles.
+   source is included.
 
 ## Notes on design
 
