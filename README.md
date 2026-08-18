@@ -4,15 +4,15 @@
 
 An interactive Swift and SwiftUI course for people starting from zero. It takes
 [iCanDoIt](https://github.com/renrenmimi/iCanDoIt) apart and rebuilds it in front of you,
-from a single `Hello, world!` line to a real macOS app.
+from a single `Hello, world!` line to a macOS app.
 
 Sister site: [AgentLab](https://agent-lab-blond.vercel.app) — see inside an AI agent.
 
 **The point: the interface is a function of your data.**
 
-![The course — four stops from Hello, world to a real macOS app](docs/swiftlab.jpg)
+![The course — four stops from Hello, world to a macOS app](docs/swiftlab.jpg)
 
-*The course — four stops from Hello, world to a real macOS app*
+*The course — four stops from Hello, world to a macOS app*
 
 ## How to open it
 
