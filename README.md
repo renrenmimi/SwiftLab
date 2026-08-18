@@ -10,6 +10,10 @@ Sister site: [AgentLab](https://agent-lab-blond.vercel.app) — see inside an AI
 
 The single idea it exists to deliver: **the interface is a function of your data.**
 
+![The course — four stops from Hello, world to a real macOS app](docs/swiftlab.jpg)
+
+*The course — four stops from Hello, world to a real macOS app*
+
 ## How to open it
 
 Double-click `index.html`. It is a plain static page — nothing to install, no command line,
