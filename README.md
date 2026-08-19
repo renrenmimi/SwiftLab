@@ -8,7 +8,7 @@ from a single `Hello, world!` line to a macOS app.
 
 Sister site: [AgentLab](https://agent-lab-blond.vercel.app) — see inside an AI agent.
 
-**The point: the interface is a function of your data.**
+The course uses a simple guiding idea: the interface is derived from application data.
 
 ![The course — four stops from Hello, world to a macOS app](docs/swiftlab.jpg)
 
