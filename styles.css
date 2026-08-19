@@ -39,7 +39,7 @@ body {
 
 /* ---- 侧栏 ---- */
 .sidebar {
-  position: fixed; top: 0; left: 0; bottom: 0; width: 236px; z-index: 5;
+  position: fixed; top: 0; left: 0; bottom: 0; width: 252px; z-index: 5;
   display: flex; flex-direction: column; gap: 20px;
   padding: 26px 16px 20px;
   background: rgba(255, 255, 255, 0.03);
@@ -50,6 +50,24 @@ body {
 .logo-mark { font-size: 26px; }
 .logo-name { font-size: 17px; font-weight: 800; letter-spacing: 0.3px; }
 .logo-sub { font-size: 11px; color: var(--text-2); }
+
+.lang-seg {
+  display: flex; gap: 4px; margin: 0 8px; padding: 3px;
+  border-radius: 999px;
+  background: var(--glass); border: 1px solid var(--glass-line);
+}
+.lang-btn {
+  flex: 1; appearance: none; border: none; cursor: pointer;
+  font-family: var(--font); font-size: 12px; font-weight: 700;
+  color: var(--text-2); background: transparent;
+  border-radius: 999px; padding: 6px 0;
+  transition: background 0.18s, color 0.18s;
+}
+.lang-btn:hover { color: var(--text-1); }
+.lang-btn.on {
+  background: var(--grad); color: #fff;
+  box-shadow: 0 4px 14px rgba(140, 92, 246, 0.4);
+}
 
 .stops { display: flex; flex-direction: column; gap: 6px; }
 .stop {
@@ -68,8 +86,8 @@ body {
 }
 .stop.active .stop-num { background: var(--grad); color: #fff; }
 .stop.done .stop-num { background: rgba(77, 223, 174, 0.2); color: var(--mint); }
-.stop-name { font-size: 13.5px; font-weight: 600; }
-.stop-desc { font-size: 11px; color: var(--text-2); }
+.stop-name { font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+.stop-desc { font-size: 11px; color: var(--text-2); line-height: 1.4; margin-top: 2px; }
 
 .side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
 .progress-card {
@@ -83,7 +101,7 @@ body {
 .side-note { font-size: 10.5px; color: rgba(255, 255, 255, 0.3); padding: 0 6px; }
 
 /* ---- 主区 ---- */
-.main { position: relative; z-index: 1; margin-left: 236px; padding: 44px 40px 80px; }
+.main { position: relative; z-index: 1; margin-left: 252px; padding: 44px 40px 80px; }
 .wrap { max-width: 900px; margin: 0 auto; }
 
 .kicker {
@@ -115,7 +133,7 @@ h1.station-title { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
 .scene-title { font-size: 21px; font-weight: 800; margin-bottom: 12px; }
 .scene-body { font-size: 15px; line-height: 1.9; color: var(--text-1); }
 .scene-body p + p { margin-top: 10px; }
-.scene-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 26px; }
+.scene-nav { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-top: 26px; }
 .scene-dots { display: flex; gap: 6px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, 0.15); transition: 0.2s; }
 .dot.on { background: var(--accent-a); transform: scale(1.3); }
@@ -224,14 +242,14 @@ h1.station-title { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
 
 .mock-hello { color: #111; font-size: 15px; padding-top: 60px; text-align: center; }
 .mock-title {
-  font-size: 19px; font-weight: 800;
+  font-size: 19px; font-weight: 800; line-height: 1.35;
   background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .mock-inputs { display: flex; gap: 8px; margin-top: 14px; }
 .mock-input {
   flex: 1; font-size: 12px; color: var(--text-2);
   background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px; padding: 8px 10px; white-space: nowrap; overflow: hidden;
+  border-radius: 8px; padding: 8px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .mock-input .typed { color: var(--text-1); }
 .mock-addbtn {
@@ -241,7 +259,7 @@ h1.station-title { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
 .mock-addbtn.pressed { transform: scale(0.94); }
 .mock-tasks { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
 .mock-task {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
   background: rgba(255, 255, 255, 0.055); border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 10px; padding: 9px 12px; font-size: 13px;
   animation: taskIn 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
@@ -278,10 +296,10 @@ h1.station-title { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
 @keyframes bounceIn { from { transform: translateY(26px) scale(0.6); opacity: 0; } }
 
 /* ---- 步骤导航 ---- */
-.step-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.step-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 18px; }
 .step-count { font-family: var(--mono); font-size: 12px; color: var(--text-2); flex: none; }
 .step-title { font-size: 19px; font-weight: 800; }
-.step-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; }
+.step-nav { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-top: 22px; }
 
 /* ---- 第三站:挖空 ---- */
 .lesson-card {
@@ -342,7 +360,7 @@ kbd {
   background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
   border-bottom-width: 2px; border-radius: 6px; padding: 1px 7px;
 }
-.copy-row { display: flex; justify-content: space-between; align-items: center; margin: 22px 0 10px; }
+.copy-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin: 22px 0 10px; }
 .challenge {
   background: rgba(140, 92, 246, 0.08); border: 1px solid rgba(140, 92, 246, 0.3);
   border-radius: 14px; padding: 18px 20px; margin-top: 22px;

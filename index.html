@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SwiftLab · 看得见的 App</title>
+  <!-- 页面外壳的文案由 app.js 的 applyChrome() 按 data-i18n 填充,这里写的是英文默认值 -->
+  <title>SwiftLab · see an app take shape</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -18,19 +19,24 @@
       <div class="logo-mark">🧪</div>
       <div>
         <div class="logo-name">SwiftLab</div>
-        <div class="logo-sub">看得见的 App</div>
+        <div class="logo-sub" data-i18n="tagline">See an app take shape</div>
       </div>
+    </div>
+
+    <div class="lang-seg" role="group" aria-label="Language" data-i18n-label="langAria">
+      <button type="button" class="lang-btn on" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" class="lang-btn" data-lang="zh" aria-pressed="false">中文</button>
     </div>
 
     <nav class="stops" id="stops"></nav>
 
     <div class="side-foot">
       <div class="progress-card">
-        <div class="progress-label">学习进度</div>
+        <div class="progress-label" data-i18n="progressLabel">Your progress</div>
         <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-        <div class="progress-num" id="progressNum">0 / 4</div>
+        <div class="progress-num" id="progressNum">0 / 4 done</div>
       </div>
-      <div class="side-note">姐妹站:AgentLab · 看得见的 Agent</div>
+      <div class="side-note" data-i18n="sideNote">Sister site: AgentLab · see inside an AI agent</div>
     </div>
   </aside>
 

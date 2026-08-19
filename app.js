@@ -1,6 +1,24 @@
-// ===== SwiftLab 交互逻辑 =====
+// ===== SwiftLab 交互逻辑 / interaction =====
 
-// ---- 进度存取 ----
+// ---- 语言 / language ----
+// data.js 里所有面向学习者的文案都是 { en, zh } 对;L() 按当前语言取一半。
+// Every learner-facing string in data.js is an { en, zh } pair; L() picks one half.
+const LANG_KEY = "swiftlab-lang";
+let LANG = "en";
+try {
+  const saved = localStorage.getItem(LANG_KEY);
+  if (saved === "en" || saved === "zh") LANG = saved;
+} catch (e) { /* 隐私模式下忽略 */ }
+
+function L(v) {
+  return v && typeof v === "object" && !Array.isArray(v) && v.en !== undefined ? v[LANG] : v;
+}
+// fmt(UI.blankOf, { a: 1, b: 8 }) → "Blank 1 of 8"
+function fmt(v, vals) {
+  return L(v).replace(/\{(\w+)\}/g, (m, k) => (vals[k] !== undefined ? vals[k] : m));
+}
+
+// ---- 进度存取 / progress ----
 const DEFAULT_PROGRESS = { stop: 0, s1: 0, s2: 0, s3: 0, doneStops: [false, false, false, false] };
 function loadProgress() {
   try {
@@ -18,27 +36,33 @@ function esc(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 // [[key:文字]] → 可点击术语(正文本身允许写 HTML)
+// 两种语言用同一个 key,只有显示文字不同。
 function rich(html) {
-  return html.replace(/\[\[(\w+):([^\]]+)\]\]/g, (_, k, t) =>
+  return L(html).replace(/\[\[(\w+):([^\]]+)\]\]/g, (_, k, t) =>
     GLOSSARY[k] ? `<span class="term" data-k="${k}">${t}</span>` : t);
 }
 
 // ---- Swift 语法高亮(先转义,再按 字符串→注释→属性→关键字→类型 上色) ----
+// 字符串和注释先换成 n 占位符再还原,这样代码里的数字(.padding(24))不会被误当成占位符。
+const HOLD = "\u0001";
 function hl(line) {
-  let s = esc(line);
+  let s = esc(L(line));
   const stash = [];
-  s = s.replace(/&quot;.*?&quot;/g, (m) => { stash.push(`<span class="s">${m}</span>`); return `${stash.length - 1}`; });
-  s = s.replace(/\/\/.*$/g, (m) => { stash.push(`<span class="c">${m}</span>`); return `${stash.length - 1}`; });
+  const hold = (m, cls) => { stash.push(`<span class="${cls}">${m}</span>`); return `${HOLD}${stash.length - 1}${HOLD}`; };
+  s = s.replace(/&quot;.*?&quot;/g, (m) => hold(m, "s"));
+  s = s.replace(/\/\/.*$/g, (m) => hold(m, "c"));
   s = s.replace(/@\w+/g, '<span class="a">$&</span>');
   s = s.replace(/\b(import|struct|var|let|private|some|in|if|else|guard|return|true|false|func)\b/g, '<span class="k">$1</span>');
   s = s.replace(/\b(View|String|Bool|UUID|PlanTask|ContentView|VStack|HStack|Text|TextField|Button|ForEach|Image|Spacer|Identifiable)\b/g, '<span class="t">$1</span>');
-  s = s.replace(/(\d+)/g, (_, i) => stash[+i]);
+  s = s.replace(new RegExp(HOLD + "(\\d+)" + HOLD, "g"), (_, i) => stash[+i]);
   return s;
 }
+// lines: 字符串 / { en, zh } 对 / { t, add } 三种都接受
 function codeBlock(lines, opts = {}) {
   const rows = lines.map((l, i) => {
-    const text = typeof l === "string" ? l : l.t;
-    const added = typeof l === "object" && l.add;
+    const isStep = l && typeof l === "object" && l.t !== undefined;
+    const text = L(isStep ? l.t : l);
+    const added = isStep && l.add;
     const isComment = text.trim().startsWith("//");
     return `<div class="cl${added ? " added" : ""}${text === "" ? " blankline" : ""}${isComment ? " dim" : ""}">` +
       `<span class="ln">${opts.noNum ? "" : i + 1}</span><span class="ct">${hl(text) || " "}</span></div>`;
@@ -51,8 +75,8 @@ const pop = $("#popover"), mask = $("#popMask");
 function openTerm(key) {
   const g = GLOSSARY[key];
   if (!g) return;
-  pop.innerHTML = `<div class="pop-title">${g.title}</div><div class="pop-body">${g.body}</div>
-    <div class="pop-close"><button class="btn ghost" onclick="closeTerm()">知道了</button></div>`;
+  pop.innerHTML = `<div class="pop-title">${L(g.title)}</div><div class="pop-body">${L(g.body)}</div>
+    <div class="pop-close"><button class="btn ghost" onclick="closeTerm()">${L(UI.gotIt)}</button></div>`;
   mask.style.display = "block";
   pop.style.display = "block";
   requestAnimationFrame(() => pop.classList.add("show"));
@@ -112,11 +136,11 @@ function renderSidebar() {
   $("#stops").innerHTML = STOPS.map((s, i) =>
     `<div class="stop${P.stop === i ? " active" : ""}${P.doneStops[i] ? " done" : ""}" onclick="go(${i})">
       <div class="stop-num">${P.doneStops[i] ? "✓" : i + 1}</div>
-      <div><div class="stop-name">${s.name}</div><div class="stop-desc">${s.desc}</div></div>
+      <div><div class="stop-name">${L(s.name)}</div><div class="stop-desc">${L(s.desc)}</div></div>
     </div>`).join("");
   const n = P.doneStops.filter(Boolean).length;
   $("#progressFill").style.width = (n / 4) * 100 + "%";
-  $("#progressNum").textContent = `${n} / 4`;
+  $("#progressNum").textContent = fmt(UI.progressCount, { n });
 }
 function go(i) { P.stop = i; save(); render(); scrollTo(0, 0); }
 function markDone(i) {
@@ -124,7 +148,6 @@ function markDone(i) {
 }
 
 // ---- Mac 模拟窗口 ----
-const DEMO_TASKS = ["跑步 3 公里", "读 20 页书", "给妈妈打电话"];
 function macWin(inner, light = false) {
   return `<div class="mac-win${light ? " light" : ""}">
     <div class="mac-bar"><span class="mac-dot r"></span><span class="mac-dot y"></span><span class="mac-dot g"></span></div>
@@ -132,8 +155,8 @@ function macWin(inner, light = false) {
 }
 function mockInputs(typed = "") {
   return `<div class="mock-inputs">
-    <div class="mock-input" id="mockInput">${typed ? `<span class="typed">${typed}</span>` : "写下一件事…"}</div>
-    <div class="mock-input">奖励(可选)</div></div>`;
+    <div class="mock-input" id="mockInput">${typed ? `<span class="typed">${typed}</span>` : L(APP_TEXT.taskPh)}</div>
+    <div class="mock-input">${L(APP_TEXT.rewardPh)}</div></div>`;
 }
 function mockTaskRow(title, i, opt = {}) {
   const done = opt.done ? " done" : "";
@@ -143,7 +166,8 @@ function mockTaskRow(title, i, opt = {}) {
     <span class="tt${done}">${title}</span>${reward}</div>`;
 }
 function renderMock(kind) {
-  const title = `<div class="mock-title">今天想完成什么?</div>`;
+  const title = `<div class="mock-title">${L(APP_TEXT.title)}</div>`;
+  const demo = DEMO_TASKS.map(L);
   switch (kind) {
     case "hello":
       return macWin(`<div class="mock-hello">Hello, world!</div>`, true);
@@ -153,30 +177,30 @@ function renderMock(kind) {
       return macWin(title + `<div class="mock-badges">
         <div class="mock-badge">@State newTask = ""</div>
         <div class="mock-badge">@State newReward = ""</div>
-        <div class="mock-badge">@State tasks = []  ← 0 条任务</div></div>`);
+        <div class="mock-badge">@State tasks = []  ← ${L(UI.tasksBadge)}</div></div>`);
     case "inputs":
       return macWin(title + mockInputs());
     case "addbtn":
       return macWin(title + `<div class="mock-inputs">
-          <div class="mock-input" id="mockInput">写下一件事…</div>
-          <div class="mock-addbtn" id="mockAdd">添加</div></div>
+          <div class="mock-input" id="mockInput">${L(APP_TEXT.taskPh)}</div>
+          <div class="mock-addbtn" id="mockAdd">${L(APP_TEXT.addBtn)}</div></div>
         <div class="mock-tasks" id="mockTasks"></div>`);
     case "list":
       return macWin(title + mockInputs() +
-        `<div class="mock-tasks">${DEMO_TASKS.map((t, i) => mockTaskRow(t, i)).join("")}</div>`);
+        `<div class="mock-tasks">${demo.map((t, i) => mockTaskRow(t, i)).join("")}</div>`);
     case "check":
       return macWin(title + mockInputs() +
-        `<div class="mock-tasks" data-interactive>${DEMO_TASKS.map((t, i) => mockTaskRow(t, i)).join("")}</div>`);
+        `<div class="mock-tasks" data-interactive>${demo.map((t, i) => mockTaskRow(t, i)).join("")}</div>`);
     case "reward":
       return macWin(title + mockInputs() +
         `<div class="mock-tasks" data-interactive>${
-          mockTaskRow(DEMO_TASKS[0], 0, { reward: "一杯冰美式", hideReward: true })}${
-          mockTaskRow(DEMO_TASKS[1], 1)}${mockTaskRow(DEMO_TASKS[2], 2)}</div>`);
+          mockTaskRow(demo[0], 0, { reward: L(UI.demoReward), hideReward: true })}${
+          mockTaskRow(demo[1], 1)}${mockTaskRow(demo[2], 2)}</div>`);
     case "ship":
       return macWin(`<div class="mock-dock">
         <div class="dock-ic">😀</div><div class="dock-ic">🌐</div>
         <div class="dock-ic hero">✅</div><div class="dock-ic">📁</div></div>
-        <div class="mock-caption" style="margin-top:18px">iCanDoIt.app · 你的作品</div>`);
+        <div class="mock-caption" style="margin-top:18px">${L(UI.dockCaption)}</div>`);
   }
   return "";
 }
@@ -200,7 +224,7 @@ function runAddDemo() {
   clearDemo();
   const input = $("#mockInput"), btn = $("#mockAdd"), list = $("#mockTasks");
   if (!input || !btn || !list) return;
-  const text = DEMO_TASKS[0];
+  const text = L(DEMO_TASKS[0]);
   input.innerHTML = ""; list.innerHTML = "";
   let shown = "";
   text.split("").forEach((ch, i) => {
@@ -213,7 +237,7 @@ function runAddDemo() {
   demoTimers.push(setTimeout(() => btn.classList.add("pressed"), tEnd + 400));
   demoTimers.push(setTimeout(() => {
     btn.classList.remove("pressed");
-    input.textContent = "写下一件事…";
+    input.textContent = L(APP_TEXT.taskPh);
     list.innerHTML = mockTaskRow(text, 0);
   }, tEnd + 650));
   demoTimers.push(setTimeout(runAddDemo, tEnd + 3600));
@@ -225,19 +249,19 @@ function renderS1() {
   const sc = S1[i];
   const last = i === S1.length - 1;
   return `<div class="wrap">
-    <span class="kicker">第 1 站 · 先懂</span>
-    <h1 class="station-title">什么是 App</h1>
-    <p class="station-sub">零代码。拆开你每天在用的 iCanDoIt,看清它的三个器官。<br>正文里<span class="term" data-k="view">这种虚线词</span>都可以点,弹出小白解释。</p>
+    <span class="kicker">${L(UI.s1Kicker)}</span>
+    <h1 class="station-title">${L(UI.s1Title)}</h1>
+    <p class="station-sub">${L(UI.s1Sub)}</p>
     <div class="card">
-      <div class="scene-visual">${sc.visual}</div>
-      <div class="scene-title">${sc.title}</div>
+      <div class="scene-visual">${L(sc.visual)}</div>
+      <div class="scene-title">${L(sc.title)}</div>
       <div class="scene-body">${rich(sc.body)}</div>
       <div class="scene-nav">
-        <button class="btn ghost" onclick="s1Go(${i - 1})" ${i === 0 ? "disabled" : ""}>← 上一幕</button>
+        <button class="btn ghost" onclick="s1Go(${i - 1})" ${i === 0 ? "disabled" : ""}>${L(UI.prevScene)}</button>
         <div class="scene-dots">${S1.map((_, d) => `<span class="dot${d === i ? " on" : ""}"></span>`).join("")}</div>
         ${last
-          ? `<button class="btn" onclick="markDone(0); go(1)">去第二站,看它长大 →</button>`
-          : `<button class="btn" onclick="s1Go(${i + 1})">${S1[i + 1].title} →</button>`}
+          ? `<button class="btn" onclick="markDone(0); go(1)">${L(UI.toStop2)}</button>`
+          : `<button class="btn" onclick="s1Go(${i + 1})">${L(S1[i + 1].title)} →</button>`}
       </div>
     </div>
   </div>`;
@@ -254,31 +278,31 @@ function renderS2() {
   const st = S2[i];
   const last = i === S2.length - 1;
   return `<div class="wrap">
-    <span class="kicker">第 2 站 · 再看</span>
-    <h1 class="station-title">看它长大</h1>
-    <p class="station-sub">九步慢动作:左边是代码怎么写(<span style="color:var(--mint)">绿色</span>是本步新增的行),右边是 App 长成了什么样。</p>
+    <span class="kicker">${L(UI.s2Kicker)}</span>
+    <h1 class="station-title">${L(UI.s2Title)}</h1>
+    <p class="station-sub">${L(UI.s2Sub)}</p>
     <div class="card">
       <div class="step-head">
         <span class="step-count">${i + 1} / ${S2.length}</span>
-        <span class="step-title">${st.title}</span>
+        <span class="step-title">${L(st.title)}</span>
       </div>
       <div class="duo">
         <div>
-          <div class="xcode-strip">🛠 <span><b>你在 Xcode 里:</b>${rich(st.xcode)}</span></div>
+          <div class="xcode-strip">🛠 <span><b>${L(UI.inXcode)}</b> ${rich(st.xcode)}</span></div>
           <div class="narration">${rich(st.narration)}</div>
           ${st.code.length ? codeBlock(st.code) : ""}
         </div>
         <div class="mock-side">
           ${renderMock(st.mock)}
-          <div class="mock-caption">${st.mockCaption}</div>
+          <div class="mock-caption">${L(st.mockCaption)}</div>
         </div>
       </div>
       <div class="step-nav">
-        <button class="btn ghost" onclick="s2Go(${i - 1})" ${i === 0 ? "disabled" : ""}>← 上一步</button>
+        <button class="btn ghost" onclick="s2Go(${i - 1})" ${i === 0 ? "disabled" : ""}>${L(UI.prevStep)}</button>
         <div class="scene-dots">${S2.map((_, d) => `<span class="dot${d === i ? " on" : ""}"></span>`).join("")}</div>
         ${last
-          ? `<button class="btn" onclick="markDone(1); go(2)">去第三站,亲手写 →</button>`
-          : `<button class="btn" onclick="s2Go(${i + 1})">下一拍:${S2[i + 1].beat} →</button>`}
+          ? `<button class="btn" onclick="markDone(1); go(2)">${L(UI.toStop3)}</button>`
+          : `<button class="btn" onclick="s2Go(${i + 1})">${fmt(UI.nextBeat, { beat: L(S2[i + 1].beat) })}</button>`}
       </div>
     </div>
   </div>`;
@@ -312,9 +336,9 @@ function renderS3() {
   if (doneAll) {
     panel = `<div class="done-banner">
       <div class="big">🎉</div>
-      <h2>八个空,全部是你自己填的</h2>
-      <p>上面这份代码已经完整,和真正能跑的 Swift 一字不差。<br>点「运行」,看看它跑起来什么样。</p>
-      <div style="margin-top:18px"><button class="btn" onclick="s3Run()">▶ 运行你的代码</button></div>
+      <h2>${L(UI.s3DoneTitle)}</h2>
+      <p>${L(UI.s3DoneBody)}</p>
+      <div style="margin-top:18px"><button class="btn" onclick="s3Run()">${L(UI.s3Run)}</button></div>
       <div id="runStage" style="max-width:420px;margin:22px auto 0"></div>
       <div id="runNext" style="margin-top:20px"></div>
     </div>`;
@@ -323,19 +347,19 @@ function renderS3() {
     const revealed = (wrongCount[i] || 0) >= 3;
     panel = `
       <div class="lesson-card">
-        <div class="lesson-tag">${b.lesson.title}</div>
+        <div class="lesson-tag">${L(b.lesson.title)}</div>
         <div class="lesson-body">${rich(b.lesson.body)}</div>
       </div>
-      <div class="blank-q">第 ${i + 1} / ${S3_BLANKS.length} 空 · ${b.q}</div>
+      <div class="blank-q">${fmt(UI.blankOf, { a: i + 1, b: S3_BLANKS.length })} · ${L(b.q)}</div>
       <div class="options">${b.options.map((o, oi) =>
         `<button class="opt" data-oi="${oi}" onclick="s3Answer(${oi})">${esc(o.label)}</button>`).join("")}</div>
       <div class="feedback" id="fb"></div>
-      ${revealed ? `<div class="reveal-btn"><button class="btn ghost" onclick="s3Reveal()">🫣 看答案</button></div>` : ""}`;
+      ${revealed ? `<div class="reveal-btn"><button class="btn ghost" onclick="s3Reveal()">${L(UI.showAnswer)}</button></div>` : ""}`;
   }
   return `<div class="wrap">
-    <span class="kicker">第 3 站 · 动手</span>
-    <h1 class="station-title">亲手写</h1>
-    <p class="station-sub">下面是一个迷你版 iCanDoIt,挖了 8 个空。每个空先教一个新知识,再由你来填。<br>填错不扣分——错误信息本身就是最好的课。</p>
+    <span class="kicker">${L(UI.s3Kicker)}</span>
+    <h1 class="station-title">${L(UI.s3Title)}</h1>
+    <p class="station-sub">${L(UI.s3Sub)}</p>
     <div class="card">
       ${s3CodeHtml(Math.min(i, S3_BLANKS.length))}
       <div style="margin-top:20px">${panel}</div>
@@ -349,7 +373,7 @@ function s3Answer(oi) {
     btns[oi].classList.add("right");
     btns.forEach((x) => (x.onclick = null));
     fb.className = "feedback good";
-    fb.innerHTML = `✅ 正确!<b>${esc(b.filled)}</b> 已经填进上面的代码里。`;
+    fb.innerHTML = fmt(UI.correct, { filled: esc(b.filled) });
     confettiTick();
     setTimeout(() => { P.s3 = i + 1; save(); render(); }, 950);
   } else {
@@ -359,7 +383,7 @@ function s3Answer(oi) {
     fb.innerHTML = `❌ ${rich(o.fb)}`;
     if (wrongCount[i] === 3 && !document.querySelector(".reveal-btn")) {
       fb.insertAdjacentHTML("afterend",
-        `<div class="reveal-btn"><button class="btn ghost" onclick="s3Reveal()">🫣 看答案</button></div>`);
+        `<div class="reveal-btn"><button class="btn ghost" onclick="s3Reveal()">${L(UI.showAnswer)}</button></div>`);
     }
   }
 }
@@ -367,7 +391,7 @@ function s3Reveal() {
   const i = P.s3, b = S3_BLANKS[i];
   const fb = $("#fb");
   fb.className = "feedback good";
-  fb.innerHTML = `答案是 <b>${esc(b.filled)}</b>。没关系,回头再体会一遍这张知识卡,印象会更深。`;
+  fb.innerHTML = fmt(UI.revealed, { filled: esc(b.filled) });
   setTimeout(() => { P.s3 = i + 1; save(); render(); }, 1400);
 }
 function confettiTick() { /* 小庆祝:答对时轻量彩带 */ confetti(false); }
@@ -376,14 +400,14 @@ function s3Run() {
   stage.innerHTML = `<div class="mac-win">
     <div class="mac-bar"><span class="mac-dot r"></span><span class="mac-dot y"></span><span class="mac-dot g"></span></div>
     <div class="mac-body">
-      <div class="mock-title">今天想完成什么?</div>
-      <div class="mock-inputs"><div class="mock-input" id="mockInput">写下一件事…</div>
-      <div class="mock-addbtn" id="mockAdd">添加</div></div>
+      <div class="mock-title">${L(APP_TEXT.title)}</div>
+      <div class="mock-inputs"><div class="mock-input" id="mockInput">${L(APP_TEXT.taskPh)}</div>
+      <div class="mock-addbtn" id="mockAdd">${L(APP_TEXT.addBtn)}</div></div>
       <div class="mock-tasks" id="mockTasks"></div>
     </div></div>`;
   clearDemo();
   const input = $("#mockInput"), btn = $("#mockAdd"), list = $("#mockTasks");
-  const items = ["跑步 3 公里", "给妈妈打电话"];
+  const items = [L(DEMO_TASKS[0]), L(DEMO_TASKS[2])];
   let delay = 400;
   items.forEach((text, idx) => {
     let shown = "";
@@ -396,62 +420,83 @@ function s3Run() {
     demoTimers.push(setTimeout(() => btn.classList.add("pressed"), (delay += 350)));
     demoTimers.push(setTimeout(() => {
       btn.classList.remove("pressed");
-      input.textContent = "写下一件事…";
+      input.textContent = L(APP_TEXT.taskPh);
       list.insertAdjacentHTML("beforeend", mockTaskRow(text, idx));
     }, (delay += 250)));
   });
   demoTimers.push(setTimeout(() => {
     confetti(true);
     markDone(2); renderSidebar();
-    $("#runNext").innerHTML = `<p style="color:var(--text-2);font-size:13.5px;line-height:1.8">
-      你刚才填的每一个词,都是真的 Swift,一字不差。<br>最后一站:把它装进真正的 Xcode,跑在你的 Mac 上。</p>
-      <div style="margin-top:14px"><button class="btn" onclick="go(3)">去第四站,装进你的 Mac →</button></div>`;
+    $("#runNext").innerHTML = `<p style="color:var(--text-2);font-size:13.5px;line-height:1.8">${L(UI.s3RunNext)}</p>
+      <div style="margin-top:14px"><button class="btn" onclick="go(3)">${L(UI.toStop4)}</button></div>`;
   }, delay + 700));
 }
 
 // ---- 第四站 ----
 function renderS4() {
   return `<div class="wrap">
-    <span class="kicker">第 4 站 · 实战</span>
-    <h1 class="station-title">装进你的 Mac</h1>
-    <p class="station-sub">${rich("前三站的一切都在浏览器里。现在打开真正的 [[xcode:Xcode]],七步,把这个 App 跑在你自己的电脑上。")}</p>
+    <span class="kicker">${L(UI.s4Kicker)}</span>
+    <h1 class="station-title">${L(UI.s4Title)}</h1>
+    <p class="station-sub">${rich(UI.s4Sub)}</p>
     <div class="card">
       <div class="check-list">${S4_STEPS.map((s) =>
         `<div class="check-item"><div class="check-num">${s.n}</div><div class="check-body">${rich(s.body)}</div></div>`).join("")}
       </div>
       <div class="copy-row">
-        <b style="font-size:15px">ContentView.swift 完整代码(已验证可编译 ✓)</b>
-        <button class="btn ghost" onclick="copyCode()">📋 复制全部</button>
+        <b style="font-size:15px">${L(UI.s4CodeLabel)}</b>
+        <button class="btn ghost" onclick="copyCode()">${L(UI.copyAll)}</button>
       </div>
       ${codeBlock(S4_CODE)}
-      <div class="challenge">
-        <b>🏆 进阶三连(不给答案,给提示):</b><br>
-        ① 把标题换成你自己的话——找到那个 Text 就行。<br>
-        ② 让完成的任务能被删除——提示:数组有个动作叫 <b>remove(at:)</b>,再配一个 Button。<br>
-        ③ 给"添加"按钮换个颜色——提示:试试挂一个 <b>.tint(.pink)</b> 修饰符。
-      </div>
+      <div class="challenge">${L(UI.challenge)}</div>
       <div class="challenge" style="margin-top:14px;background:rgba(77,223,174,0.07);border-color:rgba(77,223,174,0.3)">
-        <b>📦 想看豪华版?</b><br>
-        正式版 iCanDoIt 的完整源码在
-        <a href="https://github.com/renrenmimi/iCanDoIt" target="_blank" rel="noopener">github.com/renrenmimi/iCanDoIt</a>:
-        毛玻璃、彩带动画、连击、热力图,每个文件都能打开读。
-        建议从 <b>Sources/iCanDoIt/Views/TodayView.swift</b> 读起——你现在已经能看懂它的骨架了。
+        ${L(UI.fullVersion)}
       </div>
       <div style="text-align:center;margin-top:26px">
-        <button class="btn" onclick="s4Done()">🎉 我跑起来了!</button>
+        <button class="btn" onclick="s4Done()">${L(UI.s4Done)}</button>
       </div>
     </div>
   </div>`;
 }
 function copyCode() {
-  navigator.clipboard.writeText(S4_CODE.join("\n"))
-    .then(() => toast("已复制,去 Xcode 里粘贴吧"))
-    .catch(() => toast("复制失败,请手动选中复制"));
+  navigator.clipboard.writeText(S4_CODE.map(L).join("\n"))
+    .then(() => toast(L(UI.copied)))
+    .catch(() => toast(L(UI.copyFailed)));
 }
 function s4Done() {
   markDone(3); renderSidebar(); confetti(true);
-  toast("恭喜!你已经是写过 Mac App 的人了 🚀");
+  toast(L(UI.finishedToast));
 }
+
+// ---- 页面外壳:index.html 里带 data-i18n 的元素 ----
+// Page chrome: elements carrying data-i18n in index.html.
+function applyChrome() {
+  document.documentElement.lang = LANG === "zh" ? "zh-CN" : "en";
+  document.title = L(UI.docTitle);
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const v = UI[el.dataset.i18n];
+    if (v) el.textContent = L(v);
+  });
+  document.querySelectorAll("[data-i18n-label]").forEach((el) => {
+    const v = UI[el.dataset.i18nLabel];
+    if (v) el.setAttribute("aria-label", L(v));
+  });
+  document.querySelectorAll(".lang-btn").forEach((b) => {
+    const on = b.dataset.lang === LANG;
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+function setLang(l) {
+  if (l === LANG) return;
+  LANG = l;
+  try { localStorage.setItem(LANG_KEY, l); } catch (e) { /* 隐私模式下忽略 */ }
+  applyChrome();
+  render();           // 原地重绘:当前站点、进度、答题状态都不变
+  closeTerm();
+}
+document.querySelectorAll(".lang-btn").forEach((b) => {
+  b.addEventListener("click", () => setLang(b.dataset.lang));
+});
 
 // ---- 总渲染 ----
 function render() {
@@ -459,6 +504,7 @@ function render() {
   clearDemo();
   const stops = [renderS1, renderS2, renderS3, renderS4];
   $("#main").innerHTML = stops[P.stop]();
-  if (P.stop === 1) wireMock(S2[Math.min(P.s2, S2.length - 1)].mock);
+  if (P.stop === 1) wireMock(L(S2[Math.min(P.s2, S2.length - 1)].mock));
 }
+applyChrome();
 render();
